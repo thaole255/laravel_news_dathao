@@ -1,0 +1,77 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use App\Loaitin;
+
+class LoaiTinController extends Controller
+{
+    public function getDanhsach(){
+
+    	$data = Loaitin::all();  //lay toan bo the loai tu Model
+    	return view('admin.loaitin.danhsach',['dsLoaitin'=>$data]);
+    }
+
+    // Them
+    public function getThem(){
+    	return view('admin.loaitin.them');
+    }
+
+	public function postThem(Request $request){
+		// xu ly xac nhan; kiem tra tinh hop le; validation
+		$this->validate($request,
+	    	[
+	    		'Ten' => 'required|min:3|max:30|unique:LoaiTin'
+	    	],
+	    	[
+	    		'requir ed'=>'Ban chua nhap ten the loai',
+	    		'min'=>'Tên thể loại phải có độ dài từ 3 đến 30 kí tự',
+	    		'max'=>'Tên thể loại phải có độ dài từ 3 đến 30 kí tự',
+	    		'unique'=>'Tên thể loại này đã tồn tại'
+	    	]);
+		$loaitin = new Loaitin();
+		$loaitin->Ten = $request->Ten;
+		$loaitin->TenKhongDau = changeTitle($request->Ten);
+		// $loaitin->createg_at = new DateTime();
+		// luu vao csdl
+		$loaitin->save();
+
+		// chuyen huong toi view them
+		return redirect('admin/loaitin/them')->with('thongbao','Da them thanh cong');
+	}
+
+	// Sua
+	public function getSua($id){
+		$loaitin = LoaiTin::find($id);
+		return view('admin.loaitin.sua',['loaitin'=>$loaitin]);
+	}
+	public function postSua(request $request,$id){
+		$loaitin = LoaiTin::find($id);
+		$this->validate($request,
+			[
+	    		'Ten' => 'required|min:3|max:30|unique:LoaiTin'
+	    	],
+	    	[
+	    		'required'=>'Ban chua nhap ten the loai',
+	    		'min'=>'Tên thể loại phải có độ dài từ 3 đến 30 kí tự',
+	    		'max'=>'Tên thể loại phải có độ dài từ 3 đến 30 kí tự',
+	    		'unique'=>'Tên thể loại này đã tồn tại'
+	    	]
+		);
+		$loaitin->Ten = $request->Ten;
+		$loaitin->TenKhongDau = changeTitle($request->Ten,"-",MB_CASE_TITLE);
+		$loaitin->save();
+		return redirect('admin/loaitin/sua/'.$id)->with('thongbao','Đã sửa thành công');
+	}
+
+	// Xóa
+	public function getXoa($id){
+		$loaitin = LoaiTin::find($id);  //yêu cầu model tìm id cần xóa
+		$ten = $loaitin->Ten;
+		$loaitin->delete();
+
+		return redirect('admin/loaitin/danhsach')->with('thongbao',"Đã xóa $ten thành công");
+	
+	}
+}
